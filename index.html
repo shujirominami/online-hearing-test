@@ -65,12 +65,24 @@
 
   // ===== 2) ごく簡単な正規化（ひらがな→ローマ字相当／大雑把） =====
   function normalize(t){
-    const hira='あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんがぎぐげござじずぜぞだぢづでどぱぴぷぺぽばびぶべぼゃゅょっー'.split('');
-    const roma=['a','i','u','e','o','ka','ki','ku','ke','ko','sa','shi','su','se','so','ta','chi','tsu','te','to','na','ni','nu','ne','no','ha','hi','fu','he','ho','ma','mi','mu','me','mo','ya','yu','yo','ra','ri','ru','re','ro','wa','wo','n','ga','gi','gu','ge','go','za','ji','zu','ze','zo','da','ji','zu','de','do','pa','pi','pu','pe','po','ba','bi','bu','be','bo','ya','yu','yo','tsu','',''];
-    let out=(t||'').trim().toLowerCase();
-    for(let i=0;i<hira.length;i++) out=out.replaceAll(hira[i], roma[i]||'');
-    return out.replaceAll('ー','');
-  }
+  let out = (t || '').trim();
+
+  // 1) カタカナ→ひらがな（Unicode: カタカナに0x60引くとひらがな）
+  out = out.replace(/[ァ-ン]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0x60));
+
+  // 2) 英字は小文字に
+  out = out.toLowerCase();
+
+  // 3) ひらがな→ローマ字（簡易）
+  const hira='あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんがぎぐげござじずぜぞだぢづでどぱぴぷぺぽばびぶべぼゃゅょっー'.split('');
+  const roma=['a','i','u','e','o','ka','ki','ku','ke','ko','sa','shi','su','se','so','ta','chi','tsu','te','to','na','ni','nu','ne','no','ha','hi','fu','he','ho','ma','mi','mu','me','mo','ya','yu','yo','ra','ri','ru','re','ro','wa','wo','n','ga','gi','gu','ge','go','za','ji','zu','ze','zo','da','ji','zu','de','do','pa','pi','pu','pe','po','ba','bi','bu','be','bo','ya','yu','yo','tsu','',''];
+  for(let i=0;i<hira.length;i++) out = out.replaceAll(hira[i], roma[i] || '');
+
+  // 4) 伸ばし棒は削除（お好みで）
+  out = out.replaceAll('ー','');
+
+  return out;
+}
 
   // ===== 3) 状態とUI =====
   const a=document.getElementById('audio');
