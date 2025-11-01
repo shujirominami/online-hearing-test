@@ -134,9 +134,47 @@
     logT.appendChild(tr);
 
     i++; replay=0; ans.value='';
-    if(i>=ITEMS.length){ alert('終了しました。CSVを保存できます。'); }
-    updateUI();
+
+if (i >= ITEMS.length) {
+  // 全問題が終わったのでサーバ送信
+  sendResultToServer();
+
+  alert('終了しました。CSVを保存できます。');
+}
+
+updateUI();
   }
+
+function sendResultToServer() {
+  // 正答率を計算
+  let correctCount = 0;
+  rec.forEach(r => { if (r.correct === 1) correctCount++; });
+  const scorePercent = (correctCount / rec.length * 100).toFixed(1) + "%";
+
+  // 送信データをまとめる
+  const payload = {
+    subjectId: sid.value || "",                 // 被検者ID
+    timestamp: new Date().toISOString(),        // 実施時刻(UTC)
+    score: scorePercent,                        // 正答率
+    records: rec                                // 全回答ログ
+  };
+
+  // GASのURL（あとで実際のURLに置き換える）
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbzu7H4UrjGMa80L1fz_5V08P36_kGSgvj2yC2DjTerqj34i57Ss9VweciwjV4kEVGlZ/exec";
+
+  // サーバー(GAS)にPOST
+  fetch(GAS_URL, {
+    method: "POST",
+    mode: "no-cors", // CORS回避のための最低限の指定
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  }).catch(err => {
+    console.error("送信失敗:", err);
+  });
+}
+
 
   function downloadCSV(){
     if(rec.length===0){ alert('結果がありません'); return; }
